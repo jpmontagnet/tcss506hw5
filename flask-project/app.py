@@ -7,9 +7,15 @@ from flask_login import login_user, login_required, logout_user  # unused: curre
 from models import db, login, UserModel
 
 class LoginForm(FlaskForm):
-    email = StringField(label="Enter email", validators=[DataRequired(), Email()])
-    password = PasswordField(label="Enter password", validators=[DataRequired(), Length(min=6, max=16)])
+    email = StringField(label="Enter email", validators=[DataRequired(), Email(), Length(min=6, max=20)])
+    password = PasswordField(label="Enter password", validators=[DataRequired(), Length(min=8)])
     submit = SubmitField(label="Login")
+
+
+class RegisterForm(FlaskForm):
+    email = StringField(label="Enter email", validators=[DataRequired(), Email(), Length(min=6, max=20)])
+    password = PasswordField(label="Enter password", validators=[DataRequired(), Length(min=8)])
+    submit = SubmitField(label="Register")
 
 
 app = Flask(__name__)
@@ -19,6 +25,9 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
 login.init_app(app)
+
+# Since a self-registration page exists, no need to pre-populate
+users_initial = [("lhhung@uw.edu", "qwerty123")]
 
 def addUser(email, password):
     # check if email or username exits
@@ -31,9 +40,11 @@ def addUser(email, password):
 @app.before_first_request
 def create_table():
     db.create_all()
-    user = UserModel.query.filter_by(email="lhhung@uw.edu").first()
-    if user is None:
-        addUser("lhhung@uw.edu", "qwerty")
+    # Since a self-registration page exists, no need to pre-populate
+    # for u in users_initial:
+    #     found = UserModel.query.filter_by(email="lhhung@uw.edu").first()
+    #     if found is None:
+    #         addUser(u[0], u[1])
     
 @app.route("/home")
 @login_required
@@ -61,6 +72,24 @@ def login():
 def logout():
     logout_user()
     return redirect('/login')
+
+@app.route("/register", methods=['GET', 'POST'])
+def register():
+    form = RegisterForm()
+    error = None
+    if request.method == "POST":
+        if form.validate_on_submit():
+            email = request.form["email"]
+            pw = request.form["password"]
+            user = UserModel.query.filter_by(email=email).first()
+            if user is not None:
+                form.email.errors = ['User already exists']
+            else:
+                # TODO check addUser() retval
+                # TODO store pw hashed
+                addUser(email=email, password=pw)
+                return redirect('/login')
+    return render_template("register.html", form=form)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True)
