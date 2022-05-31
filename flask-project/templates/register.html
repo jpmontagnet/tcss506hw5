@@ -6,6 +6,19 @@
 <form method="post">
   {{ form.csrf_token }}
   <div class="mb-3">
+    <fieldset class="form-field">
+        {{ form.username.label(class="form-label") }}
+        {{ form.username(class="form-control") }}
+        {% if form.username.errors %}
+          <ul class="errors" style="color:red">
+          {% for error in form.username.errors %}
+            <li>{{ error }}</li>
+          {% endfor %}
+          </ul>
+        {% endif %}
+    </fieldset>
+  </div>
+  <div class="mb-3">
 	<fieldset class="form-field">
 		{{ form.email.label(class="form-label") }}
 		{{ form.email(class="form-control") }}
