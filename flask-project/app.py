@@ -58,8 +58,13 @@ def login():
             username = request.form["username"]
             pw = request.form["password"]
             user = UserModel.query.filter_by(username=username).first()
-            if user is not None and user.check_password(pw):
-                login_user(user)
+            if user is None:
+                form.username.errors = ["No such user."]
+            elif not user.check_password(pw):
+                form.username.errors = ["Password not accepted."]
+            elif not login_user(user):
+                form.username.errors = ["Login failed."]
+            else:
                 return redirect('/home')
     return render_template("login.html", form=form)
 
