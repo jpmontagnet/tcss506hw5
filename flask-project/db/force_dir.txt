@@ -1,0 +1,1 @@
+This is just to force creation of this dir when doing recursive copy into container.
