@@ -4,5 +4,4 @@ email_validator
 requests 
 flask-login 
 flask-sqlalchemy
-psycopg2-binary
 gunicorn
